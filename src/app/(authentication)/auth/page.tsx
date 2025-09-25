@@ -1,10 +1,11 @@
 import Auth from '@/components/auth'
+// import { Navbar  } from '@/components/navbar'
 import React from 'react'
 
 const page = () => {
   return (
     <div
-      className='min-h-screen relative bg-background text-primary'
+      className='relative  min-h-screen bg-background text-primary'
     >
       <Auth />
     </div>
