@@ -19,6 +19,7 @@ interface BaseFormField {
     name: string;
     label: string;
     required: boolean;
+    condition?: (formData: FormDataState) => boolean; // NEW - conditional field display
 }
 
 // Password validation rules interface
@@ -34,6 +35,7 @@ interface PasswordValidationRules {
 
 interface TextFormField extends BaseFormField {
     type: 'text' | 'email' | 'number';
+    placeholder?: string; // NEW
 }
 
 interface PasswordFormField extends BaseFormField {
@@ -47,20 +49,32 @@ interface PhoneFormField extends BaseFormField {
     placeholder?: string;
 }
 
+// NEW - SelectFormFieldOption interface
+interface SelectFormFieldOption {
+    label: string;
+    value: string;
+}
+
 interface SelectFormField extends BaseFormField {
     type: 'select';
-    options: string[];
+    options: (string | SelectFormFieldOption)[]; // UPDATED - support both string and object options
 }
 
 interface TextareaFormField extends BaseFormField {
     type: 'textarea';
+    placeholder?: string; // NEW
+}
+
+// NEW - DateFormField
+interface DateFormField extends BaseFormField {
+    type: 'date';
 }
 
 interface FileFormField extends BaseFormField {
     type: 'file';
     accept: string;
-    maxSizeMB: number;
-    path: string;
+    maxSizeMB?: number; // MADE OPTIONAL
+    path?: string;      // MADE OPTIONAL
 }
 
 interface CheckboxFormField extends BaseFormField {
@@ -71,6 +85,7 @@ interface CaptchaFormField extends BaseFormField {
     type: 'captcha';
 }
 
+// UPDATED - Added DateFormField to the union
 export type FormField = 
     | TextFormField 
     | PasswordFormField 
@@ -79,7 +94,8 @@ export type FormField =
     | TextareaFormField 
     | FileFormField 
     | CheckboxFormField 
-    | CaptchaFormField;
+    | CaptchaFormField
+    | DateFormField; // NEW
 
 // Step interface
 export interface FormStep {
@@ -95,7 +111,10 @@ interface StepApplicationFormProps {
     className?: string;
     autoFilledData?: FormDataState;
     allowStepNavigation?: boolean;
-    metaDataName:string
+    metaDataName: string;
+    // NEW - external loading state and custom button text
+    isSubmitting?: boolean;
+    submitButtonText?: string;
 }
 
 interface FormErrors {
@@ -112,7 +131,9 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
     className,
     autoFilledData = {},
     metaDataName,
-    allowStepNavigation = true
+    allowStepNavigation = true,
+    isSubmitting, // NEW
+    submitButtonText // NEW
 }) => {
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [formData, setFormData] = useState<FormDataState>(autoFilledData);
@@ -121,6 +142,9 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
     const [captchaVerified, setCaptchaVerified] = useState<boolean>(false);
     const [passwordVisibility, setPasswordVisibility] = useState<Record<string, boolean>>({});
     const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+
+    // Use external loading state if provided, otherwise fallback to internal state
+    const externalLoading = isSubmitting ?? loading; // NEW
 
     // Restore the form Data
     React.useEffect(() => {
@@ -135,7 +159,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                 console.error('Error parsing stored form data:', error);
             }
         }
-    }, []);
+    }, [metaDataName]);
     
 
     // Save progress to localStorage
@@ -294,10 +318,10 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
     };
 
     // File change handler
-    const handleFileChange = async (name: string, file: File | null, path: string): Promise<void> => {
+    const handleFileChange = async (name: string, file: File | null, path?: string): Promise<void> => {
         const currentStepFields = steps[currentStep].fields;
         const field = currentStepFields.find(f => f.name === name) as FileFormField;
-        const maxSize = field?.maxSizeMB || 1;
+        const maxSize = field?.maxSizeMB || 5; // Default 5MB if not specified
 
         if (file && file.size > maxSize * 1024 * 1024) {
             setErrors(prev => ({
@@ -311,7 +335,9 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
             try {
                 const fileFormData = new FormData();
                 fileFormData.append('file', file);
-                fileFormData.append('path', path);
+                if (path) {
+                    fileFormData.append('path', path);
+                }
 
                 const res = await fetch('/api/files/upload', {
                     method: 'POST',
@@ -352,10 +378,11 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
         }
     };
 
-    // Validate current step
+    // UPDATED - Validate current step with condition filtering
     const validateCurrentStep = (): boolean => {
         const newErrors: FormErrors = {};
-        const currentFields = steps[currentStep].fields;
+        const currentFields = steps[currentStep].fields
+            .filter(field => !field.condition || field.condition(formData)); // NEW - filter by condition
 
         currentFields.forEach(field => {
             const fieldValue = formData[field.name];
@@ -400,10 +427,10 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                     }
                 } else {
                     const defaultRules: PasswordValidationRules = {
-                        minLength: 8,
-                        requireUppercase: true,
-                        requireLowercase: true,
-                        requireNumbers: true,
+                        minLength: 0,
+                        requireUppercase: false,
+                        requireLowercase: false,
+                        requireNumbers: false,
                         requireSpecialChars: false
                     };
                     const validationError = validatePassword(fieldValue, defaultRules);
@@ -476,7 +503,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
         }
     };
 
-    // Render field function (same as before but simplified for brevity)
+    // UPDATED - Render field function with new field types
     const renderField = (field: FormField): React.ReactElement => {
         const { name, label, type, required } = field;
         const value = typeof formData[name] === 'string' ? formData[name] as string : '';
@@ -487,6 +514,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
             case 'text':
             case 'email':
             case 'number':
+                const textField = field as TextFormField;
                 return (
                     <div key={name} className="w-full min-w-0">
                         <Label
@@ -502,7 +530,32 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                             disabled={!!autoFilledData?.[name]}
                             value={value}
                             onChange={(e) => handleInputChange(name, e.target.value)}
-                            placeholder={`Enter ${label.toLowerCase()}`}
+                            placeholder={textField.placeholder || `Enter ${label.toLowerCase()}`}
+                            className={`w-full ${error ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                        />
+                        {error && (
+                            <p className="text-sm text-red-600 mt-1">{error}</p>
+                        )}
+                    </div>
+                );
+
+            // NEW - Date field
+            case 'date':
+                return (
+                    <div key={name} className="w-full min-w-0">
+                        <Label
+                            htmlFor={name}
+                            className="block text-sm font-medium text-primary mb-2"
+                        >
+                            {label}
+                            {required && <span className="text-destructive ml-1">*</span>}
+                        </Label>
+                        <Input
+                            id={name}
+                            type="date"
+                            disabled={!!autoFilledData?.[name]}
+                            value={value}
+                            onChange={(e) => handleInputChange(name, e.target.value)}
                             className={`w-full ${error ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                         />
                         {error && (
@@ -619,6 +672,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                     </div>
                 );
 
+            // UPDATED - Select field with object and string options support
             case 'select':
                 const selectField = field as SelectFormField;
                 return (
@@ -636,11 +690,15 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
                             </SelectTrigger>
                             <SelectContent>
-                                {selectField.options.map((option, index) => (
-                                    <SelectItem key={index} value={option}>
-                                        {option}
-                                    </SelectItem>
-                                ))}
+                                {selectField.options.map((option, index) => {
+                                    const optValue = typeof option === 'string' ? option : option.value;
+                                    const optLabel = typeof option === 'string' ? option : option.label;
+                                    return (
+                                        <SelectItem key={index} value={optValue}>
+                                            {optLabel}
+                                        </SelectItem>
+                                    );
+                                })}
                             </SelectContent>
                         </Select>
                         {error && (
@@ -650,6 +708,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                 );
 
             case 'textarea':
+                const textareaField = field as TextareaFormField;
                 return (
                     <div key={name} className="w-full min-w-0">
                         <Label
@@ -664,7 +723,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                             disabled={!!autoFilledData?.[name]}
                             value={value}
                             onChange={(e) => handleInputChange(name, e.target.value)}
-                            placeholder={`Enter ${label.toLowerCase()}`}
+                            placeholder={textareaField.placeholder || `Enter ${label.toLowerCase()}`}
                             className={`w-full min-h-[100px] resize-y ${error ? 'border-destructive' : ''}`}
                             rows={4}
                         />
@@ -727,7 +786,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                         )}
 
                         <p className="text-xs text-gray-500 mt-1">
-                            Accepted: {fileField.accept}. Max: {fileField.maxSizeMB}MB
+                            Accepted: {fileField.accept}. Max: {fileField.maxSizeMB || 5}MB
                         </p>
                         {error && (
                             <p className="text-sm text-red-600 mt-1">{error}</p>
@@ -775,12 +834,16 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
     const currentStepData = steps[currentStep];
     const isLastStep = currentStep === steps.length - 1;
 
+    // UPDATED - Filter fields by condition before rendering
+    const currentStepFields = currentStepData?.fields.filter(field => 
+        !field.condition || field.condition(formData)
+    ) || [];
+
     return (
         <div className={`${className} my-5 w-full max-w-4xl mx-auto`}>
             {/* Step Progress Indicator */}
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                    {/* <h2 className="text-2xl font-bold text-gray-900">Application Form</h2> */}
                     <span className="text-sm text-gray-500">
                         Step {currentStep + 1} of {steps.length}
                     </span>
@@ -842,7 +905,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {currentStepData?.fields.map(field => {
+                        {currentStepFields.map(field => {
                             const isFullWidth = field.type === 'textarea' || field.type === 'checkbox' || field.type === 'captcha';
                             
                             return (
@@ -882,18 +945,18 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
                             ) : (
                                 <Button
                                     type="submit"
-                                    disabled={loading}
+                                    disabled={externalLoading} // UPDATED - use external loading
                                     className="flex items-center space-x-2"
                                 >
-                                    {loading ? (
+                                    {externalLoading ? ( // UPDATED
                                         <>
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                            <span>Submitting...</span>
+                                            <span>{submitButtonText || 'Submitting...'}</span> {/* UPDATED */}
                                         </>
                                     ) : (
                                         <>
                                             <Check className="w-4 h-4" />
-                                            <span>Submit Application</span>
+                                            <span>{submitButtonText || 'Submit Application'}</span> {/* UPDATED */}
                                         </>
                                     )}
                                 </Button>
@@ -907,6 +970,7 @@ const StepApplicationForm: React.FC<StepApplicationFormProps> = ({
 };
 
 export default StepApplicationForm;
+
 
 // Example usage:
 export const sampleSteps: FormStep[] = [

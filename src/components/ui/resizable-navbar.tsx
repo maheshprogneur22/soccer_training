@@ -378,7 +378,8 @@ export const MobileNavItems = ({ items, className, onItemClick }: NavItemsProps)
 
       {items.map((item, idx) => (
         <div key={`mobile-nav-item-${idx}`} className="w-full flex-shrink-0">
-          {item.items || item.content ? (
+          
+          { item.items || item.content ? (
             <div>
               <button
                 className="flex w-full items-center justify-between px-4 py-3 text-left text-popover-foreground hover:bg-popover-foreground/10 rounded-md transition-colors duration-200"

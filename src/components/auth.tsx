@@ -140,6 +140,13 @@ export const loginSteps: FormStep[] = [
                 name: "password",
                 label: "Password",
                 type: "password",
+                validation: {
+                    minLength: 0,
+                    requireUppercase: false,
+                    requireLowercase: false,
+                    requireNumbers: false,
+                    requireSpecialChars: false
+                },
                 required: true,
                 showToggle: true,
             }
@@ -164,7 +171,7 @@ const Auth = () => {
     }
 
     return (
-        <div className='min-h-screen relative flex justify-center items-center p-2 sm:p-4 bg-background'>
+        <div className='min-h-screen relative flex justify-center items-center p-2 sm:p-4 xl:p-0 bg-background'>
             {/* Background Image */}
             <Image
                 src={'/assets/bg-1.jpg'}
@@ -173,14 +180,14 @@ const Auth = () => {
                 className='object-cover backdrop-blur-2xl inset-0'
                 priority
             />
-            
+
             {/* Main Container - Responsive */}
-            <div className='relative w-full max-w-sm sm:max-w-[95%] md:max-w-4xl lg:max-w-6xl xl:max-w-[90%] h-[95vh] sm:!h-[80vh] min-h-[600px] shadow-2xl shadow-purple-300/30 border-border rounded-3xl sm:min-h-[450px]'>
+            <div className='relative w-full max-w-sm sm:max-w-[95%] md:max-w-4xl lg:max-w-6xl xl:max-w-7xl h-[95vh] sm:!h-[80vh] min-h-[600px] shadow-2xl  border-border rounded-3xl sm:min-h-[450px]'>
                 {/* Main Card Container - Responsive */}
                 <div className='relative w-full h-full bg-card/55 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl ring-1 ring-border/20 overflow-hidden'>
                     {/* Responsive Layout Container */}
                     <div className='flex flex-col md:flex-row h-full'>
-                        
+
                         {/* Left Side - Image Container - Hidden on mobile, visible on desktop */}
                         <div className='hidden md:flex md:flex-1 relative overflow-hidden bg-muted/30'>
                             {/* Background with lighter overlay */}
@@ -201,7 +208,7 @@ const Auth = () => {
                             <div className='absolute bottom-4 lg:bottom-8 right-4 lg:right-8 w-20 h-20 lg:w-28 lg:h-28 bg-card/40 backdrop-blur-md rounded-2xl lg:rounded-3xl ring-1 ring-border/20'></div>
 
                             {/* Center Image Container - Responsive */}
-                            <div className='absolute inset-0 flex items-center justify-center p-8 lg:p-12'>
+                            <div className='absolute inset-0 flex items-center justify-center shadow-2xl p-8 lg:p-12'>
                                 <div className='relative w-full max-w-xs lg:max-w-md h-64 lg:h-80 bg-card/80 backdrop-blur-lg rounded-xl lg:rounded-2xl ring-1 ring-border/40 overflow-hidden shadow-2xl'>
                                     <Image
                                         src={'/assets/bg-1.jpg'}
@@ -216,8 +223,8 @@ const Auth = () => {
                                                 {isLogin ? 'Welcome Back!' : 'Join Our Community'}
                                             </h3>
                                             <p className='text-xs lg:text-sm text-muted-foreground'>
-                                                {isLogin 
-                                                    ? 'Access your account securely' 
+                                                {isLogin
+                                                    ? 'Access your account securely'
                                                     : 'Create your account in simple steps'
                                                 }
                                             </p>
@@ -229,7 +236,7 @@ const Auth = () => {
 
                         {/* Right Side / Full Width on Mobile - Form Container */}
                         <div className='flex-1 md:flex-1 relative bg-card/10 backdrop-blur-md flex flex-col h-full'>
-                            
+
                             {/* Mobile Header Background - Only on mobile */}
                             <div className='md:hidden absolute inset-0 opacity-10'>
                                 <Image
@@ -244,17 +251,17 @@ const Auth = () => {
                             <div className='relative z-10 flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-6 pb-2'>
                                 <div className='text-center'>
                                     {/* Logo/Icon - Responsive */}
-                                    <div className='w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 sm:mb-3 bg-muted/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center ring-1 ring-border/20'>
+                                    <div className='w-12 h-12 sm:w-14 sm:h-14 md:w-18 md:h-18 shadow-lg mx-auto mb-2 sm:mb-3 bg-muted/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center ring-1 ring-border/20'>
                                         <svg className='w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground' fill='currentColor' viewBox='0 0 20 20'>
                                             <path fillRule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z' clipRule='evenodd' />
                                         </svg>
                                     </div>
-                                    
+
                                     {/* Title - Responsive */}
-                                    <h1 className='text-lg sm:text-xl lg:text-2xl font-bold text-foreground mb-1'>
+                                    <h1 className='text-lg sm:text-xl lg:text-4xl font-bold text-foreground mb-1'>
                                         {isLogin ? 'Welcome Back' : 'Create Account'}
                                     </h1>
-                                    
+
                                     {/* Subtitle - Responsive */}
                                     <p className='text-xs sm:text-sm text-muted-foreground px-2'>
                                         {isLogin
@@ -266,7 +273,7 @@ const Auth = () => {
                                     {/* Mobile-only welcome message */}
                                     <div className='md:hidden mt-3 p-3 bg-muted/10 backdrop-blur-sm rounded-lg border border-border/20'>
                                         <p className='text-xs text-muted-foreground'>
-                                            {isLogin 
+                                            {isLogin
                                                 ? '👋 Welcome back! Please enter your credentials below.'
                                                 : '🚀 Join thousands of users with our step-by-step process.'
                                             }
@@ -293,7 +300,7 @@ const Auth = () => {
                                 <div className='text-center space-y-2 sm:space-y-3'>
                                     {/* Divider */}
                                     <div className='w-full h-px bg-border/30'></div>
-                                    
+
                                     {/* Toggle Auth Mode - Responsive */}
                                     <p className='text-xs sm:text-sm text-muted-foreground'>
                                         {isLogin ? "Don't have an account?" : "Already have an account?"}
@@ -304,7 +311,7 @@ const Auth = () => {
                                             {isLogin ? 'Sign up' : 'Sign in'}
                                         </button>
                                     </p>
-                                    
+
                                     {/* Footer Message - Responsive */}
                                     <p className='text-xs text-muted-foreground/90 px-2'>
                                         {isLogin
