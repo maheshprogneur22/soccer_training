@@ -31,19 +31,19 @@ const AboutSection = () => {
 
       <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div>
-          <h3 className="text-5xl font-bold text-yellow-400">5000</h3>
+          <h3 className="text-5xl font-bold text-green-400">5000</h3>
           <p className="mt-2 text-gray-300">App users</p>
         </div>
         <div>
-          <h3 className="text-5xl font-bold text-yellow-400">117</h3>
+          <h3 className="text-5xl font-bold text-green-400">117</h3>
           <p className="mt-2 text-gray-300">Certified coaches</p>
         </div>
         <div>
-          <h3 className="text-5xl font-bold text-yellow-400">80</h3>
+          <h3 className="text-5xl font-bold text-green-400">80</h3>
           <p className="mt-2 text-gray-300">Available fields across the world</p>
         </div>
         <div>
-          <h3 className="text-5xl font-bold text-yellow-400">50</h3>
+          <h3 className="text-5xl font-bold text-green-400">50</h3>
           <p className="mt-2 text-gray-300">Cities across the world</p>
         </div>
       </div>
