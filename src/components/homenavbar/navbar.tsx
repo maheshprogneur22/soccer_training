@@ -1,26 +1,36 @@
-// components/Navbar.tsx
+
 "use client";
 
 import {useState} from "react";
 import Link from "next/link";
+import Image from "next/image";
+import logo from "@/assets/logo.png"
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     const menuItems = [
-        {name: "Who We Are", href: "/about"},
+        {name: "Who We Are?", href: "/about"},
         {name: "Our Methodology", href: "#methodology"},
         {name: "Buy Your Membership", href: "#membership"},
         {name: "Create an Account", href: "#create-account"},
     ];
 
     return (
-        <nav className="bg-purple-600 text-white shadow-lg sticky top-0 z-50">
+        <nav className="bg-white text-gray-800 shadow-lg sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
 
-                    <div className="flex-shrink-0 text-2xl font-bold hover:text-purple-300 transition-colors">
-                        <Link href="/">Kickster</Link>
+                    <div className="flex-shrink-0 text-2xl font-bold hover:text-purple-600 transition-colors">
+
+                        <Image
+                            src={logo}
+                            alt="Soccer Player"
+                            width={30}
+                            height={40}
+                            className="inline-block ml-2"
+                        />
+                        ickster
                     </div>
 
 
@@ -29,7 +39,7 @@ export default function Navbar() {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="relative text-lg font-medium px-2 py-1 group"
+                                className="relative text-lg font-medium px-2 py-1 group hover:text-purple-600 transition-colors"
                             >
                                 {item.name}
                                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-500 group-hover:w-full transition-all duration-300"></span>
@@ -48,16 +58,15 @@ export default function Navbar() {
                 </div>
             </div>
 
-
             <div
-                className={`md:hidden bg-purple-500 overflow-hidden transition-max-height duration-500 ${isOpen ? "max-h-96" : "max-h-0"
+                className={`md:hidden bg-white overflow-hidden transition-max-height duration-500 ${isOpen ? "max-h-96" : "max-h-0"
                     }`}
             >
                 {menuItems.map((item) => (
                     <Link
                         key={item.name}
                         href={item.href}
-                        className="block px-6 py-3 hover:bg-gradient-to-r from-purple-400 to-pink-500 transition-colors text-white font-medium rounded-md mx-2 my-1"
+                        className="block px-6 py-3 hover:bg-gradient-to-r from-purple-400 to-pink-500 transition-colors text-gray-800 font-medium rounded-md mx-2 my-1"
                     >
                         {item.name}
                     </Link>
