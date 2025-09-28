@@ -7,7 +7,7 @@ export default function MainLayout({
 }) {
   return (
     <>
-      <NavbarDemo />
+      {/* <NavbarDemo /> */}
       {children}
     </>
   );
